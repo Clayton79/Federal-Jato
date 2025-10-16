@@ -8,17 +8,16 @@ $acao = $_REQUEST['acao'] ?? '';
 
 try {
   if ($acao === 'criar' && $_SERVER['REQUEST_METHOD']==='POST') {
-    $sql = "INSERT INTO comandas (data_hora, funcionarios, veiculo, servico, categoria, valor, pagamento, situacao)
-            VALUES (:data_hora,:funcionarios,:veiculo,:servico,:categoria,:valor,:pagamento,'andamento')";
+    $sql = "INSERT INTO comandas (data_hora, veiculo, servico, categoria, valor, pagamento, situacao)
+            VALUES (:data_hora,:veiculo,:servico,:categoria,:valor,:pagamento,'andamento')";
     $st = $pdo->prepare($sql);
     $st->execute([
-      ':data_hora'    => $_POST['data_hora'],
-      ':funcionarios' => trim($_POST['funcionarios']),
-      ':veiculo'      => trim($_POST['veiculo']),
-      ':servico'      => trim($_POST['servico']),
-      ':categoria'    => trim($_POST['categoria']),
-      ':valor'        => (float)$_POST['valor'],
-      ':pagamento'    => trim($_POST['pagamento']),
+      ':data_hora' => $_POST['data_hora'],
+      ':veiculo'   => trim($_POST['veiculo']),
+      ':servico'   => trim($_POST['servico']),
+      ':categoria' => trim($_POST['categoria']),
+      ':valor'     => (float)$_POST['valor'],
+      ':pagamento' => trim($_POST['pagamento']),
     ]);
     header('Location: /Federal_Jato/Federal-Jato/HTML/comandas.php?situacao=andamento'); exit;
   }
@@ -39,7 +38,6 @@ try {
     header('Location: /Federal_Jato/Federal-Jato/HTML/comandas.php'); exit;
   }
 
-  // fallback
   header('Location: /Federal_Jato/Federal-Jato/HTML/comandas.php'); exit;
 
 } catch (Throwable $e) {

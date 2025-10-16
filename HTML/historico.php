@@ -50,7 +50,7 @@ $offset          = ($pagina - 1) * $por_pagina;
 
 // Lista
 $sqlLista = "
-  SELECT id, data_hora, funcionarios, veiculo, servico, categoria, valor, pagamento, situacao
+  SELECT id, data_hora, veiculo, servico, categoria, valor, pagamento, situacao
   FROM comandas
   $whereSql
   ORDER BY data_hora DESC, id DESC
@@ -94,7 +94,7 @@ function qs(array $override=[]): string {
 
 <nav class="nav">
         <div class="nav-items">
-            <a href="#" class="nav-item">
+            <a href="/Federal_Jato/Federal-Jato/HTML/comandas.php" class="nav-item">
                 <svg class="icon" fill="white" viewBox="0 0 24 24">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="white" fill="none" stroke-width="2" />
                     <line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2" />
@@ -103,18 +103,12 @@ function qs(array $override=[]): string {
                 </svg>
                 Comandas
             </a>
-            <a href="#" class="nav-item">
+            <a href="/Federal_Jato/Federal-Jato/HTML/despesas.php" class="nav-item">
                 <svg class="icon" fill="white" viewBox="0 0 24 24">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="white" fill="none" stroke-width="2" />
                     <circle cx="12" cy="7" r="4" stroke="white" fill="none" stroke-width="2" />
                 </svg>
                 Despesas
-            </a>
-            <a href="/Federal_Jato/Federal-Jato/HTML/servicos.php" class="nav-item">
-                <svg class="icon" fill="white" viewBox="0 0 24 24">
-                    <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
-                </svg>
-                Serviços
             </a>
             <a href="/Federal_Jato/Federal-Jato/HTML/historico.php" class="nav-item">
   <svg class="icon" fill="white" viewBox="0 0 24 24">
@@ -125,7 +119,9 @@ function qs(array $override=[]): string {
 </a>
 
         </div>
+        <a href="/Federal_Jato/Federal-Jato/HTML/login.php">
         <button class="logout-btn">Deslogar</button>
+        </a>
     </nav>
 
   <main class="container">
@@ -198,7 +194,6 @@ function qs(array $override=[]): string {
     <!-- Título + Exportar -->
     <div class="bloco-titulo">
       <h2>Comandas Registradas</h2>
-      <a class="btn exportar" href="historico_export_csv.php?<?= qs(['pagina'=>1]) ?>">Exportar</a>
     </div>
 
     <!-- Tabela -->
@@ -208,14 +203,12 @@ function qs(array $override=[]): string {
           <tr>
             <th>ID</th>
             <th>Data/Hora</th>
-            <th>Funcionário(s)</th>
             <th>Veículo</th>
             <th>Serviço</th>
             <th>Categoria</th>
             <th>Valor</th>
             <th>Pagamento</th>
             <th>Situação</th>
-            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -227,17 +220,12 @@ function qs(array $override=[]): string {
             <tr>
               <td>#<?= (int)$c['id'] ?></td>
               <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($c['data_hora']))) ?></td>
-              <td><?= htmlspecialchars($c['funcionarios'] ?? '') ?></td>
               <td><?= htmlspecialchars($c['veiculo'] ?? '') ?></td>
               <td><?= htmlspecialchars($c['servico'] ?? '') ?></td>
               <td><?= htmlspecialchars($c['categoria'] ?? '') ?></td>
               <td>R$ <?= number_format((float)$c['valor'], 2, ',', '.') ?></td>
               <td><?= htmlspecialchars($c['pagamento'] ?? '') ?></td>
               <td><span class="badge <?= htmlspecialchars(strtolower($c['situacao'])) ?>"><?= htmlspecialchars($c['situacao'] ?? '') ?></span></td>
-              <td class="acoes">
-                <a class="acao ver" title="Ver" href="historico_view.php?id=<?= (int)$c['id'] ?>">👁️</a>
-                <a class="acao imprimir" title="Imprimir" href="historico_print.php?id=<?= (int)$c['id'] ?>" target="_blank">🖨️</a>
-              </td>
             </tr>
           <?php endforeach; endif; ?>
         </tbody>

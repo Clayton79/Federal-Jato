@@ -21,19 +21,18 @@ if ($categoria!==''){ $where[]='categoria=:categoria';      $params[':categoria'
 
 $whereSql = $where ? ('WHERE '.implode(' AND ',$where)) : '';
 
-$sql = "SELECT id,data_hora,funcionarios,veiculo,servico,categoria,valor,pagamento,situacao
+$sql = "SELECT id,data_hora,veiculo,servico,categoria,valor,pagamento,situacao
         FROM comandas $whereSql ORDER BY data_hora DESC,id DESC";
 $st = $pdo->prepare($sql);
 $st->execute($params);
 
 $out = fopen('php://output','w');
-fputcsv($out, ['ID','Data/Hora','Funcionários','Veículo','Serviço','Categoria','Valor','Pagamento','Situação'], ';');
+fputcsv($out, ['ID','Data/Hora','Veículo','Serviço','Categoria','Valor','Pagamento','Situação'], ';');
 
 while($r = $st->fetch(PDO::FETCH_ASSOC)){
   fputcsv($out, [
     $r['id'],
     date('d/m/Y H:i', strtotime($r['data_hora'])),
-    $r['funcionarios'],
     $r['veiculo'],
     $r['servico'],
     $r['categoria'],
