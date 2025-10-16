@@ -1,0 +1,262 @@
+<?php
+declare(strict_types=1);
+
+// Conexão
+require_once __DIR__.'/../PHP/config/db.php';
+$pdo = pdo_conn();
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// Entrada
+$data_ini  = $_GET['data_ini']  ?? '';
+$data_fim  = $_GET['data_fim']  ?? '';
+$situacao  = $_GET['situacao']  ?? '';
+$veiculo   = $_GET['veiculo']   ?? '';
+$categoria = $_GET['categoria'] ?? '';
+$pagina    = max(1, (int)($_GET['pagina'] ?? 1));
+$por_pagina = 10;
+
+// WHERE
+$where  = [];
+$params = [];
+
+if ($data_ini !== '') { $where[] = 'DATE(data_hora) >= :data_ini'; $params[':data_ini'] = $data_ini; }
+if ($data_fim !== '') { $where[] = 'DATE(data_hora) <= :data_fim'; $params[':data_fim'] = $data_fim; }
+if ($situacao !== '') { $where[] = 'situacao = :situacao';          $params[':situacao'] = $situacao; }
+if ($veiculo  !== '') { $where[] = 'veiculo  = :veiculo';            $params[':veiculo']  = $veiculo; }
+if ($categoria!== '') { $where[] = 'categoria= :categoria';          $params[':categoria']= $categoria; }
+
+$whereSql = $where ? ('WHERE '.implode(' AND ', $where)) : '';
+
+// Cards
+$sqlCards = "
+  SELECT
+    COUNT(*) AS total_comandas,
+    COALESCE(SUM(valor),0) AS valor_total,
+    COALESCE(AVG(valor),0) AS ticket_medio
+  FROM comandas
+  $whereSql
+";
+$st = $pdo->prepare($sqlCards);
+$st->execute($params);
+$cards = $st->fetch(PDO::FETCH_ASSOC) ?: ['total_comandas'=>0,'valor_total'=>0,'ticket_medio'=>0];
+
+// Total e paginação
+$st = $pdo->prepare("SELECT COUNT(*) FROM comandas $whereSql");
+$st->execute($params);
+$total_registros = (int)$st->fetchColumn();
+$total_paginas   = max(1, (int)ceil($total_registros / $por_pagina));
+$pagina          = min($pagina, $total_paginas);
+$offset          = ($pagina - 1) * $por_pagina;
+
+// Lista
+$sqlLista = "
+  SELECT id, data_hora, funcionarios, veiculo, servico, categoria, valor, pagamento, situacao
+  FROM comandas
+  $whereSql
+  ORDER BY data_hora DESC, id DESC
+  LIMIT :lim OFFSET :off
+";
+$st = $pdo->prepare($sqlLista);
+foreach ($params as $k=>$v) { $st->bindValue($k, $v, PDO::PARAM_STR); }
+$st->bindValue(':lim', $por_pagina, PDO::PARAM_INT);
+$st->bindValue(':off', $offset, PDO::PARAM_INT);
+$st->execute();
+$comandas = $st->fetchAll(PDO::FETCH_ASSOC);
+
+// Helper QS
+function qs(array $override=[]): string {
+  $q = $_GET;
+  foreach ($override as $k=>$v) { $q[$k]=$v; }
+  return http_build_query($q);
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Histórico de Comandas</title>
+  <link rel="stylesheet" href="../CSS/style_historico.css?v=2" />
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <svg class="icon" fill="white" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" stroke="white" fill="none" stroke-width="2"/>
+    <polyline points="12 6 12 12 16 14" stroke="white" fill="none" stroke-width="2"/>
+  </svg>
+      <h1>Histórico de Comandas</h1>
+    </div>
+    <p class="header-subtitle">Acompanhamento de Histórico de Comandas</p>
+  </div>
+
+<nav class="nav">
+        <div class="nav-items">
+            <a href="#" class="nav-item">
+                <svg class="icon" fill="white" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="white" fill="none" stroke-width="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2" />
+                    <line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2" />
+                    <line x1="3" y1="10" x2="21" y2="10" stroke="white" stroke-width="2" />
+                </svg>
+                Comandas
+            </a>
+            <a href="#" class="nav-item">
+                <svg class="icon" fill="white" viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="white" fill="none" stroke-width="2" />
+                    <circle cx="12" cy="7" r="4" stroke="white" fill="none" stroke-width="2" />
+                </svg>
+                Despesas
+            </a>
+            <a href="/Federal_Jato/Federal-Jato/HTML/servicos.php" class="nav-item">
+                <svg class="icon" fill="white" viewBox="0 0 24 24">
+                    <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
+                </svg>
+                Serviços
+            </a>
+            <a href="/Federal_Jato/Federal-Jato/HTML/historico.php" class="nav-item">
+  <svg class="icon" fill="white" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" stroke="white" fill="none" stroke-width="2"/>
+    <polyline points="12 6 12 12 16 14" stroke="white" fill="none" stroke-width="2"/>
+  </svg>
+  Histórico
+</a>
+
+        </div>
+        <button class="logout-btn">Deslogar</button>
+    </nav>
+
+  <main class="container">
+
+    <!-- Filtros -->
+    <form method="GET" action="historico.php" class="filtros-card">
+      <div class="filtros-grid">
+        <div class="filtro">
+          <label>Data inicial</label>
+          <input type="date" name="data_ini" value="<?= htmlspecialchars($data_ini) ?>">
+        </div>
+        <div class="filtro">
+          <label>Data final</label>
+          <input type="date" name="data_fim" value="<?= htmlspecialchars($data_fim) ?>">
+        </div>
+        <div class="filtro">
+          <label>Situação</label>
+          <select name="situacao">
+            <option value="">Todas</option>
+            <option value="finalizada" <?= $situacao==='finalizada'?'selected':'' ?>>Finalizada</option>
+            <option value="pendente"   <?= $situacao==='pendente'?'selected':'' ?>>Pendente</option>
+            <option value="cancelada"  <?= $situacao==='cancelada'?'selected':'' ?>>Cancelada</option>
+          </select>
+        </div>
+        <div class="filtro">
+          <label>Veículo</label>
+          <select name="veiculo">
+            <option value="">Todos</option>
+            <option value="carro" <?= $veiculo==='carro'?'selected':'' ?>>Carro</option>
+            <option value="moto"  <?= $veiculo==='moto'?'selected':''  ?>>Moto</option>
+            <option value="outro" <?= $veiculo==='outro'?'selected':'' ?>>Outro</option>
+          </select>
+        </div>
+        <div class="filtro">
+          <label>Categoria</label>
+          <select name="categoria">
+            <option value="">Todas</option>
+            <option value="lavagem"   <?= $categoria==='lavagem'?'selected':'' ?>>Lavagem</option>
+            <option value="polimento" <?= $categoria==='polimento'?'selected':'' ?>>Polimento</option>
+            <option value="higienizacao" <?= $categoria==='higienizacao'?'selected':'' ?>>Higienização</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filtros-acoes">
+        <button class="btn primario" type="submit">Filtrar</button>
+        <a class="btn secundario" href="historico.php">Limpar</a>
+      </div>
+    </form>
+
+    <!-- Cards -->
+    <section class="cards-resumo">
+      <article class="card total">
+        <div class="card-titulo">Total de Comandas</div>
+        <div class="card-valor"><?= (int)$cards['total_comandas'] ?></div>
+        <div class="card-icone">🗃️</div>
+      </article>
+      <article class="card valor">
+        <div class="card-titulo">Valor Total</div>
+        <div class="card-valor">R$ <?= number_format((float)$cards['valor_total'], 2, ',', '.') ?></div>
+        <div class="card-icone">💵</div>
+      </article>
+      <article class="card ticket">
+        <div class="card-titulo">Ticket Médio</div>
+        <div class="card-valor">R$ <?= number_format((float)$cards['ticket_medio'], 2, ',', '.') ?></div>
+        <div class="card-icone">📈</div>
+      </article>
+    </section>
+
+    <!-- Título + Exportar -->
+    <div class="bloco-titulo">
+      <h2>Comandas Registradas</h2>
+      <a class="btn exportar" href="historico_export_csv.php?<?= qs(['pagina'=>1]) ?>">Exportar</a>
+    </div>
+
+    <!-- Tabela -->
+    <div class="tabela-wrap">
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Data/Hora</th>
+            <th>Funcionário(s)</th>
+            <th>Veículo</th>
+            <th>Serviço</th>
+            <th>Categoria</th>
+            <th>Valor</th>
+            <th>Pagamento</th>
+            <th>Situação</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (!$comandas): ?>
+            <tr class="row-placeholder">
+              <td colspan="10">Nenhum registro encontrado com os filtros atuais.</td>
+            </tr>
+          <?php else: foreach ($comandas as $c): ?>
+            <tr>
+              <td>#<?= (int)$c['id'] ?></td>
+              <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($c['data_hora']))) ?></td>
+              <td><?= htmlspecialchars($c['funcionarios'] ?? '') ?></td>
+              <td><?= htmlspecialchars($c['veiculo'] ?? '') ?></td>
+              <td><?= htmlspecialchars($c['servico'] ?? '') ?></td>
+              <td><?= htmlspecialchars($c['categoria'] ?? '') ?></td>
+              <td>R$ <?= number_format((float)$c['valor'], 2, ',', '.') ?></td>
+              <td><?= htmlspecialchars($c['pagamento'] ?? '') ?></td>
+              <td><span class="badge <?= htmlspecialchars(strtolower($c['situacao'])) ?>"><?= htmlspecialchars($c['situacao'] ?? '') ?></span></td>
+              <td class="acoes">
+                <a class="acao ver" title="Ver" href="historico_view.php?id=<?= (int)$c['id'] ?>">👁️</a>
+                <a class="acao imprimir" title="Imprimir" href="historico_print.php?id=<?= (int)$c['id'] ?>" target="_blank">🖨️</a>
+              </td>
+            </tr>
+          <?php endforeach; endif; ?>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginação -->
+    <div class="paginacao">
+      <a class="pag-btn <?= $pagina<=1?'desabilitado':'' ?>" href="<?= $pagina<=1?'#':'historico.php?'.qs(['pagina'=>$pagina-1]) ?>">Anterior</a>
+      <?php
+        $pags = array_unique(array_filter([max(1,$pagina-1), $pagina, min($total_paginas,$pagina+1)]));
+        foreach ($pags as $p) {
+          $cls = $p===$pagina ? 'pag-btn ativo' : 'pag-btn';
+          echo '<a class="'.$cls.'" href="historico.php?'.qs(['pagina'=>$p]).'">'.$p.'</a>';
+        }
+      ?>
+      <a class="pag-btn <?= $pagina>=$total_paginas?'desabilitado':'' ?>" href="<?= $pagina>=$total_paginas?'#':'historico.php?'.qs(['pagina'=>$pagina+1]) ?>">Próxima</a>
+    </div>
+
+  </main>
+</body>
+</html>
