@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS comandas (
   data_hora DATETIME NOT NULL,
   veiculo VARCHAR(20) DEFAULT NULL,
   servico VARCHAR(255) DEFAULT NULL,
-  categoria VARCHAR(50) DEFAULT NULL,
   valor DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   pagamento VARCHAR(30) DEFAULT NULL,
   situacao ENUM('andamento','finalizada') NOT NULL DEFAULT 'andamento',
@@ -29,7 +28,7 @@ CREATE TABLE IF NOT EXISTS comandas (
 CREATE INDEX idx_comandas_data      ON comandas (data_hora);
 CREATE INDEX idx_comandas_situacao  ON comandas (situacao);
 CREATE INDEX idx_comandas_veiculo   ON comandas (veiculo);
-CREATE INDEX idx_comandas_categoria ON comandas (categoria);
+
 
 CREATE TABLE IF NOT EXISTS despesas (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

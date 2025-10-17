@@ -10,8 +10,8 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $data_ini  = $_GET['data_ini']  ?? '';
 $data_fim  = $_GET['data_fim']  ?? '';
 $situacao  = $_GET['situacao']  ?? '';
+$servico  = $_GET['servico']  ?? '';
 $veiculo   = $_GET['veiculo']   ?? '';
-$categoria = $_GET['categoria'] ?? '';
 $pagina    = max(1, (int)($_GET['pagina'] ?? 1));
 $por_pagina = 10;
 
@@ -21,9 +21,10 @@ $params = [];
 
 if ($data_ini !== '') { $where[] = 'DATE(data_hora) >= :data_ini'; $params[':data_ini'] = $data_ini; }
 if ($data_fim !== '') { $where[] = 'DATE(data_hora) <= :data_fim'; $params[':data_fim'] = $data_fim; }
+if ($servico  !== '') { $where[] = 'servico = :servico';  $params[':servico']  = $servico; }
 if ($situacao !== '') { $where[] = 'situacao = :situacao';          $params[':situacao'] = $situacao; }
 if ($veiculo  !== '') { $where[] = 'veiculo  = :veiculo';            $params[':veiculo']  = $veiculo; }
-if ($categoria!== '') { $where[] = 'categoria= :categoria';          $params[':categoria']= $categoria; }
+
 
 $whereSql = $where ? ('WHERE '.implode(' AND ', $where)) : '';
 
@@ -50,7 +51,7 @@ $offset          = ($pagina - 1) * $por_pagina;
 
 // Lista
 $sqlLista = "
-  SELECT id, data_hora, veiculo, servico, categoria, valor, pagamento, situacao
+  SELECT id, data_hora, veiculo, servico,valor, pagamento, situacao
   FROM comandas
   $whereSql
   ORDER BY data_hora DESC, id DESC
@@ -138,6 +139,23 @@ function qs(array $override=[]): string {
           <input type="date" name="data_fim" value="<?= htmlspecialchars($data_fim) ?>">
         </div>
         <div class="filtro">
+  <label>Serviço</label>
+  <select name="servico">
+    <option value="">Todos</option>
+    <option value="Lavagem simples"  <?= (($_GET['servico'] ?? '')==='Lavagem simples')  ? 'selected' : '' ?>>Lavagem simples</option>
+    <option value="Lavagem completa" <?= (($_GET['servico'] ?? '')==='Lavagem completa') ? 'selected' : '' ?>>Lavagem completa</option>
+    <option value="Lavagem premium"  <?= (($_GET['servico'] ?? '')==='Lavagem premium')  ? 'selected' : '' ?>>Lavagem premium</option>
+    <option value="Lavagem técnica"  <?= (($_GET['servico'] ?? '')==='Lavagem técnica')  ? 'selected' : '' ?>>Lavagem técnica</option>
+    <option value="Lavagem a seco"   <?= (($_GET['servico'] ?? '')==='Lavagem a seco')   ? 'selected' : '' ?>>Lavagem a seco</option>
+    <option value="Lavagem com cera" <?= (($_GET['servico'] ?? '')==='Lavagem com cera') ? 'selected' : '' ?>>Lavagem com cera</option>
+    <option value="Lavagem de motor" <?= (($_GET['servico'] ?? '')==='Lavagem de motor') ? 'selected' : '' ?>>Lavagem de motor</option>
+    <option value="Lavagem detalhada interna" <?= (($_GET['servico'] ?? '')==='Lavagem detalhada interna') ? 'selected' : '' ?>>Lavagem detalhada interna</option>
+    <option value="Lavagem detalhada externa" <?= (($_GET['servico'] ?? '')==='Lavagem detalhada externa') ? 'selected' : '' ?>>Lavagem detalhada externa</option>
+    <option value="Lavagem de rodas e caixas" <?= (($_GET['servico'] ?? '')==='Lavagem de rodas e caixas') ? 'selected' : '' ?>>Lavagem de rodas e caixas</option>
+    <option value="Lavagem pós-viagem"        <?= (($_GET['servico'] ?? '')==='Lavagem pós-viagem')        ? 'selected' : '' ?>>Lavagem pós-viagem</option>
+  </select>
+</div>
+        <div class="filtro">
           <label>Situação</label>
           <select name="situacao">
             <option value="">Todas</option>
@@ -152,18 +170,9 @@ function qs(array $override=[]): string {
             <option value="">Todos</option>
             <option value="carro" <?= $veiculo==='carro'?'selected':'' ?>>Carro</option>
             <option value="moto"  <?= $veiculo==='moto'?'selected':''  ?>>Moto</option>
-            <option value="outro" <?= $veiculo==='outro'?'selected':'' ?>>Outro</option>
           </select>
         </div>
-        <div class="filtro">
-          <label>Categoria</label>
-          <select name="categoria">
-            <option value="">Todas</option>
-            <option value="lavagem"   <?= $categoria==='lavagem'?'selected':'' ?>>Lavagem</option>
-            <option value="polimento" <?= $categoria==='polimento'?'selected':'' ?>>Polimento</option>
-            <option value="higienizacao" <?= $categoria==='higienizacao'?'selected':'' ?>>Higienização</option>
-          </select>
-        </div>
+        
       </div>
 
       <div class="filtros-acoes">
@@ -205,7 +214,6 @@ function qs(array $override=[]): string {
             <th>Data/Hora</th>
             <th>Veículo</th>
             <th>Serviço</th>
-            <th>Categoria</th>
             <th>Valor</th>
             <th>Pagamento</th>
             <th>Situação</th>
@@ -222,7 +230,6 @@ function qs(array $override=[]): string {
               <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($c['data_hora']))) ?></td>
               <td><?= htmlspecialchars($c['veiculo'] ?? '') ?></td>
               <td><?= htmlspecialchars($c['servico'] ?? '') ?></td>
-              <td><?= htmlspecialchars($c['categoria'] ?? '') ?></td>
               <td>R$ <?= number_format((float)$c['valor'], 2, ',', '.') ?></td>
               <td><?= htmlspecialchars($c['pagamento'] ?? '') ?></td>
               <td><span class="badge <?= htmlspecialchars(strtolower($c['situacao'])) ?>"><?= htmlspecialchars($c['situacao'] ?? '') ?></span></td>

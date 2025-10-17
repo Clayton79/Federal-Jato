@@ -84,3 +84,59 @@ button {
   color: #4c5564;
   font-size: 2rem;
 }
+
+/* Base do seu front mantida */
+#login-page{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+#side-content img{width:100%;height:100vh;object-fit:cover}
+#form-container{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:48px 64px}
+.title{font-size:28px;font-weight:800;color:#111827;margin-bottom:16px}
+input{width:420px;max-width:90%;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:10px;outline:0}
+input:focus{box-shadow:0 0 0 3px rgba(79,70,229,.15);border-color:#c7d2fe}
+.alert.erro{background:#fee2e2;color:#991b1b;border-radius:10px;padding:10px 12px;margin-bottom:12px}
+
+/* Botões */
+.btn{
+  display:inline-flex;            /* flex no botão */
+  align-items:center;             /* centraliza verticalmente */
+  justify-content:center;         /* centraliza horizontalmente */
+  text-decoration:none;
+  cursor:pointer;
+  border:none;
+}
+
+.btn.primario{
+  background:#4f46e5;
+  color:#fff;
+  border-radius:10px;
+  padding:10px 16px;
+  min-height:40px;                /* altura mínima consistente */
+  line-height:1;                  /* evita deslocamento vertical do texto */
+  font-weight:700;
+  text-align:center;              /* redundante, mas ok */
+}
+
+
+/* Agrupamento dos botões e alinhamento à esquerda */
+.login-actions{display:flex;gap:10px;justify-content:flex-start;margin-top:12px}
+
+/* Leve deslocamento à esquerda do 'Acessar' */
+.btn-acessar{margin-left:-0px}
+
+/* 'Criar conta' com mesmo visual do 'Acessar' (usa .btn.primario) */
+.btn-criar{
+  margin-left: 200px;
+  margin-top: 24px;
+  position: absolute;
+  background:#4f46e5;
+  color:#fff;
+  border-radius:10px;
+  padding:10px 28px;
+  min-height:40px;                /* altura mínima consistente */
+  line-height:1.2;                  /* evita deslocamento vertical do texto */
+  font-weight:700;
+  text-align:center;  
+}
+
+a{
+  text-decoration: none;
+}

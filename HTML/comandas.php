@@ -23,7 +23,7 @@ $pagina          = min($pagina, $total_paginas);
 $offset          = ($pagina - 1) * $por_pagina;
 
 /* Lista */
-$sql = "SELECT id, data_hora, veiculo, servico, categoria, valor, pagamento, situacao
+$sql = "SELECT id, data_hora, veiculo, servico,valor, pagamento, situacao
         FROM comandas
         $whereSql
         ORDER BY data_hora DESC, id DESC
@@ -107,25 +107,28 @@ function qs(array $o=[]): string { $q=$_GET; foreach($o as $k=>$v){$q[$k]=$v;} r
               <option value="">Veículo</option>
               <option value="carro">Carro</option>
               <option value="moto">Moto</option>
-              <option value="outro">Outro</option>
             </select>
             <span class="select-caret">▾</span>
           </div>
-
+          <div class="filter-field">
           <div class="select-box">
             <select name="servico" class="select-clean" required>
-              <option value="">Serviço</option>
+             <option value="">Serviço</option>
+              <option value="Lavagem simples">Lavagem simples</option>
               <option value="Lavagem completa">Lavagem completa</option>
-              <option value="Polimento">Polimento</option>
-              <option value="Higienização">Higienização</option>
+    <option value="Lavagem premium">Lavagem premium</option>
+    <option value="Lavagem técnica">Lavagem técnica</option>
+    <option value="Lavagem a seco">Lavagem a seco</option>
+    <option value="Lavagem com cera">Lavagem com cera</option>
+    <option value="Lavagem de motor">Lavagem de motor</option>
+    <option value="Lavagem detalhada interna">Lavagem detalhada interna</option>
+    <option value="Lavagem detalhada externa">Lavagem detalhada externa</option>
+    <option value="Lavagem de rodas e caixas">Lavagem de rodas e caixas</option>
+    <option value="Lavagem pós-viagem">Lavagem pós-viagem</option>
             </select>
             <span class="select-caret">▾</span>
           </div>
-
-          <div class="input-box">
-            <input type="text" name="categoria" class="input-clean" placeholder="Categoria (ex.: lavagem)" required>
-          </div>
-
+         </div>
           <div class="select-box">
             <select name="pagamento" class="select-clean" required>
               <option value="">Pagamento</option>
@@ -169,7 +172,6 @@ function qs(array $o=[]): string { $q=$_GET; foreach($o as $k=>$v){$q[$k]=$v;} r
           <tr>
             <th>Veículo</th>
             <th>Serviço</th>
-            <th>Categoria</th>
             <th>Data/Hora</th>
             <th>Valor</th>
             <th>Pagamento</th>
@@ -184,7 +186,6 @@ function qs(array $o=[]): string { $q=$_GET; foreach($o as $k=>$v){$q[$k]=$v;} r
           <tr>
             <td><?= htmlspecialchars($c['veiculo'] ?? '') ?></td>
             <td><?= htmlspecialchars($c['servico'] ?? '') ?></td>
-            <td><?= htmlspecialchars($c['categoria'] ?? '') ?></td>
             <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($c['data_hora']))) ?></td>
             <td>R$ <?= number_format((float)$c['valor'],2,',','.') ?></td>
             <td><?= htmlspecialchars($c['pagamento'] ?? '') ?></td>
