@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { loginUser } from '../services/storageService'
+import imagemLogin from '/criacao_de_login.jpeg'
 
 export default function Login({ onLoginSuccess, onGoToSignUp }) {
   const [email, setEmail] = useState('demo@example.com')
@@ -30,7 +31,7 @@ export default function Login({ onLoginSuccess, onGoToSignUp }) {
   return (
     <div id="login-page">
       <div id="side-content">
-        <img src={`${import.meta.env.BASE_URL}criacao_de_login.jpeg`} alt="Federal Jato" />
+        <img src={imagemLogin} alt="Federal Jato" />
       </div>
       <div id="form-container">
         <h3 className="title">Fazer Login</h3>
