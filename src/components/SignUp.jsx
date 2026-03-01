@@ -59,7 +59,7 @@ export default function SignUp({ onSignUpSuccess, onGoToLogin }) {
   return (
     <div id="login-page">
       <div id="side-content">
-        <img src="/criacao_de_login.jpeg" alt="Federal Jato" />
+        <img src={`${import.meta.env.BASE_URL}criacao_de_login.jpeg`} alt="Federal Jato" />
       </div>
       <div id="form-container">
         <h3 className="title">Nova Conta</h3>
